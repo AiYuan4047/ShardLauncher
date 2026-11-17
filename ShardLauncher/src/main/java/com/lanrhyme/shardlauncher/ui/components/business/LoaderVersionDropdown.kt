@@ -192,13 +192,13 @@ private fun <T> VersionDropdownItem(version: T) {
     when (version) {
         is ModrinthVersion -> {
              Column {
-                Text(version.versionNumber, style = MaterialTheme.typography.bodyMedium)
-                Text(version.name, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(version.versionNumber.orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                Text(version.name.orEmpty(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         is FabricLoaderVersion -> {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(version.version, style = MaterialTheme.typography.bodyMedium)
+                Text(version.version.orEmpty(), style = MaterialTheme.typography.bodyMedium)
                 val status = if (version.stable == true) "Stable" else "Beta"
                 val color = if (version.stable == true) Color(0xFF4CAF50) else Color(0xFFFFA000)
                 Text(
@@ -216,7 +216,7 @@ private fun <T> VersionDropdownItem(version: T) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(version.version, style = MaterialTheme.typography.bodyMedium)
+                        Text(version.version.orEmpty(), style = MaterialTheme.typography.bodyMedium)
                         version.status?.let {
                             val color = if (version.isRecommended) Color(0xFF4CAF50) else Color(0xFFFFA000)
                             Text(
@@ -237,7 +237,7 @@ private fun <T> VersionDropdownItem(version: T) {
             }
         }
         is String -> {
-            Text(version, style = MaterialTheme.typography.bodyMedium)
+            Text(version.orEmpty(), style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
