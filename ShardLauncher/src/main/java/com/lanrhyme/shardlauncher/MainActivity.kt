@@ -1047,7 +1047,6 @@ fun MainContent(
                         "version_detail/{versionId}",
                         arguments = listOf(navArgument("versionId") { type = NavType.StringType })
                 ) { VersionDetailScreen(navController, it.arguments?.getString("versionId")) }
-                composable(Screen.Online.route) { OnlineScreen() }
                 composable(
                         route = Screen.Account.route + "?code={code}",
                         arguments =
@@ -1288,13 +1287,6 @@ fun ExpandButton(
                             .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
             )
         }
-    }
-}
-
-@Composable
-fun OnlineScreen() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("鑱旀満", style = MaterialTheme.typography.headlineLarge)
     }
 }
 
