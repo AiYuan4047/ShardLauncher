@@ -5,6 +5,7 @@
 
 package com.lanrhyme.shardlauncher.ui.settings
 
+import android.widget.Toast
 import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -204,7 +205,7 @@ fun RuntimeManageScreen(
                         runtimes = RuntimesManager.getRuntimes()
                     }.onFailure { error ->
                         showProgressDialog = false
-                        // TODO: Show error dialog
+                        Toast.makeText(context, "运行时下载失败: ${error.message}", Toast.LENGTH_LONG).show()
                     }
                 }
             }

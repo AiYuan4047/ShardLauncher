@@ -1,5 +1,7 @@
 package com.lanrhyme.shardlauncher.ui.version.management
 
+import android.widget.Toast
+
 import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -220,7 +222,7 @@ fun ShaderPacksManagementScreen(
                                             }
                                             refreshTrigger++
                                         } catch (e: Exception) {
-                                            // TODO: 显示错误信息
+                                            Toast.makeText(context, "添加光影包失败: ${e.message}", Toast.LENGTH_LONG).show()
                                         }
                                     }
                                     FileSelectorResult.Cancelled -> { /* 用户取消 */ }

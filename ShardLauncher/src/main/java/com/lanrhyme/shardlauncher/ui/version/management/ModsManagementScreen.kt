@@ -1,5 +1,7 @@
 package com.lanrhyme.shardlauncher.ui.version.management
 
+import android.widget.Toast
+
 import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
@@ -261,7 +263,7 @@ fun ModsManagementScreen(
                             }
                             refreshTrigger++
                         } catch (e: Exception) {
-                            // TODO: 显示错误信息
+                            Toast.makeText(context, "添加模组失败: ${e.message}", Toast.LENGTH_LONG).show()
                         }
                     }
                     FileSelectorResult.Cancelled -> { /* 用户取消 */ }
