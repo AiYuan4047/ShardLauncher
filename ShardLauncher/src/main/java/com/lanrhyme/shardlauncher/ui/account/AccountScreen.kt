@@ -20,9 +20,8 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cloud
@@ -97,24 +96,16 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
             )
 
             Row(modifier = Modifier.fillMaxSize()) {
-                // Left side: Large card for the skin preview
+                // Left side: skin preview, no card
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(0.2f)
-                        .padding(24.dp)
-                        .animatedAppearance(1, animatedSpeed)
+                        .weight(0.26f)
+                        .padding(16.dp)
+                        .animatedAppearance(1, animatedSpeed),
+                    contentAlignment = Alignment.Center
                 ) {
-                    ShardCard(
-                        modifier = Modifier.fillMaxSize(),
-                        shape = RoundedCornerShape(32.dp),
-                        style = CardStyle.GLASS
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            selectedAccount?.let { account ->
+                    selectedAccount?.let { account ->
                                 val context = LocalContext.current
                                 val localSkinFile =
                                     java.io.File(
@@ -159,40 +150,42 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
                                     textAlign = TextAlign.Center
                                 )
                             }
-                        }
-                    }
                 }
 
-                // Right side: Horizontally scrollable grid of account cards
-                Column(
+                // Right side: one whole card containing the account list
+                Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(0.65f)
-                        .padding(end = 24.dp)
+                        .weight(0.74f)
+                        .padding(end = 24.dp, top = 8.dp, bottom = 8.dp)
                 ) {
-                    LazyHorizontalGrid(
-                        rows = GridCells.Fixed(2),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .animatedAppearance(3, animatedSpeed),
-                        contentPadding = PaddingValues(bottom = 80.dp),
-                        horizontalArrangement = Arrangement.spacedBy(20.dp),
-                        verticalArrangement = Arrangement.spacedBy(20.dp)
+                    ShardCard(
+                        modifier = Modifier.fillMaxSize(),
+                        shape = RoundedCornerShape(32.dp),
+                        style = CardStyle.GLASS
                     ) {
-                        items(accounts) { account ->
-                            AccountCard(
-                                account = account,
-                                isSelected = selectedAccount == account,
-                                onClick = {
-                                    accountViewModel.selectAccount(account)
-                                },
-                                onDelete = { acc ->
-                                    accountViewModel.deleteAccount(acc)
-                                },
-                                onEdit = { acc -> editingAccount = acc },
-                                onSkinSaved = { skinRefreshKey++ },
-                                cardAlpha = cardAlpha
-                            )
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .animatedAppearance(3, animatedSpeed),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(accounts) { account ->
+                                AccountCard(
+                                    account = account,
+                                    isSelected = selectedAccount == account,
+                                    onClick = {
+                                        accountViewModel.selectAccount(account)
+                                    },
+                                    onDelete = { acc ->
+                                        accountViewModel.deleteAccount(acc)
+                                    },
+                                    onEdit = { acc -> editingAccount = acc },
+                                    onSkinSaved = { skinRefreshKey++ },
+                                    cardAlpha = cardAlpha
+                                )
+                            }
                         }
                     }
                 }
@@ -202,10 +195,10 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
         // FluidFab in Box scope so .align works
         FluidFab(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(x = 130.dp, y = 140.dp)
+                .align(Alignment.BottomStart)
+                .offset(x = 20.dp, y = 20.dp)
                 .animatedAppearance(4, animatedSpeed),
-            direction = FluidFabDirection.TOP_LEFT,
+            direction = FluidFabDirection.TOP_RIGHT,
             items = listOf(
                 FluidFabItem(
                     label = "离线账户",
