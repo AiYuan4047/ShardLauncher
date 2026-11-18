@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -80,6 +81,7 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
     val selectedAccount by accountViewModel.selectedAccount.collectAsState()
     var showOfflineAccountDialog by remember { mutableStateOf(false) }
     var editingAccount by remember { mutableStateOf<Account?>(null) }
+    var skinRefreshKey by remember { mutableIntStateOf(0) }
     val microsoftLoginState by accountViewModel.microsoftLoginState.collectAsState()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -126,12 +128,15 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
                                     }
 
                                 val imageRequest =
-                                    ImageRequest.Builder(LocalContext.current)
-                                        .data(imageUrl)
-                                        .crossfade(true)
-                                        .diskCachePolicy(CachePolicy.ENABLED)
-                                        .memoryCachePolicy(CachePolicy.ENABLED)
-                                        .build()
+                                    remember(skinRefreshKey) {
+                                        ImageRequest.Builder(LocalContext.current)
+                                            .data(imageUrl)
+                                            .crossfade(true)
+                                            // 本地皮肤文件每次保存后需重新读取，禁用磁盘缓存避免读到旧图
+                                            .diskCachePolicy(if (localSkinFile.exists()) CachePolicy.DISABLED else CachePolicy.ENABLED)
+                                            .memoryCachePolicy(CachePolicy.DISABLED)
+                                            .build()
+                                    }
                                 SubcomposeAsyncImage(
                                     model = imageRequest,
                                     contentDescription = "${account.username}'s skin",
@@ -184,6 +189,7 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
                                     accountViewModel.deleteAccount(acc)
                                 },
                                 onEdit = { acc -> editingAccount = acc },
+                                onSkinSaved = { skinRefreshKey++ },
                                 cardAlpha = cardAlpha
                             )
                         }

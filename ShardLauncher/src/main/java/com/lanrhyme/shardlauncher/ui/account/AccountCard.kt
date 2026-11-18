@@ -1,6 +1,7 @@
 package com.lanrhyme.shardlauncher.ui.account
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -30,8 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,9 +53,16 @@ import com.lanrhyme.shardlauncher.R
 import com.lanrhyme.shardlauncher.game.account.ACCOUNT_TYPE_LOCAL
 import com.lanrhyme.shardlauncher.game.account.Account
 import com.lanrhyme.shardlauncher.game.account.getDisplayName
+import com.lanrhyme.shardlauncher.game.account.wardrobe.validateSkinFile
+import com.lanrhyme.shardlauncher.ui.components.filemanager.FileSelectorConfig
+import com.lanrhyme.shardlauncher.ui.components.filemanager.FileSelectorMode
+import com.lanrhyme.shardlauncher.ui.components.filemanager.FileSelectorResult
+import com.lanrhyme.shardlauncher.ui.components.filemanager.FileSelectorScreen
 import com.lanrhyme.shardlauncher.ui.components.layout.LocalCardLayoutConfig
 import com.lanrhyme.shardlauncher.ui.components.basic.*
 import dev.chrisbanes.haze.hazeEffect
+import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -63,10 +73,14 @@ fun AccountCard(
         onLongClick: () -> Unit = {},
         onDelete: (Account) -> Unit,
         onEdit: (Account) -> Unit,
-        cardAlpha: Float
+        cardAlpha: Float,
+        onSkinSaved: (Account) -> Unit = {}
 ) {
         val (isCardBlurEnabled, _, hazeState) = LocalCardLayoutConfig.current
         var showMenu by remember { mutableStateOf(false) }
+        var showSkinSelector by remember { mutableStateOf(false) }
+        var skinKey by remember { mutableIntStateOf(0) }
+        val scope = rememberCoroutineScope()
         val interactionSource = remember { MutableInteractionSource() }
         val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -111,13 +125,16 @@ fun AccountCard(
                                         }
 
                                 val imageRequest =
-                                        ImageRequest.Builder(context)
-                                                .data(imageUrl)
-                                                .error(R.drawable.img_steve)
-                                                .crossfade(true)
-                                                .diskCachePolicy(CachePolicy.ENABLED)
-                                                .memoryCachePolicy(CachePolicy.ENABLED)
-                                                .build()
+                                        remember(skinKey) {
+                                                ImageRequest.Builder(context)
+                                                        .data(imageUrl)
+                                                        .error(R.drawable.img_steve)
+                                                        .crossfade(true)
+                                                        // 本地皮肤文件每次保存后需重新读取，禁用磁盘缓存避免读到旧图
+                                                        .diskCachePolicy(if (localSkinFile.exists()) CachePolicy.DISABLED else CachePolicy.ENABLED)
+                                                        .memoryCachePolicy(CachePolicy.DISABLED)
+                                                        .build()
+                                        }
 
                                 SubcomposeAsyncImage(
                                         model = imageRequest,
@@ -172,7 +189,7 @@ fun AccountCard(
                         DropdownMenuItem(
                                 text = { Text("保存皮肤") },
                                 onClick = {
-                                        // TODO: Handle save skin action
+                                        showSkinSelector = true
                                         showMenu = false
                                 }
                         )
@@ -197,5 +214,49 @@ fun AccountCard(
                                 )
                         }
                 }
+        }
+
+        if (showSkinSelector) {
+                FileSelectorScreen(
+                        visible = showSkinSelector,
+                        config = FileSelectorConfig(
+                                initialPath = android.os.Environment.getExternalStorageDirectory(),
+                                mode = FileSelectorMode.FILE_ONLY,
+                                showHiddenFiles = true,
+                                allowCreateDirectory = false,
+                                fileFilter = { file ->
+                                        file.isFile && (file.extension.equals("png", true) || file.extension.equals("jpg", true) || file.extension.equals("jpeg", true))
+                                }
+                        ),
+                        onDismissRequest = { showSkinSelector = false },
+                        onSelection = { result ->
+                                when (result) {
+                                        is FileSelectorResult.Selected -> {
+                                                val sourceFile = result.path
+                                                scope.launch {
+                                                        try {
+                                                                val valid = validateSkinFile(sourceFile)
+                                                                if (!valid) {
+                                                                        Toast.makeText(context, "皮肤无效：需 64x64 或 64x32 像素", Toast.LENGTH_LONG).show()
+                                                                } else {
+                                                                        val skinDir = File(context.filesDir, "skins")
+                                                                        if (!skinDir.exists()) skinDir.mkdirs()
+                                                                        val target = File(skinDir, "${account.profileId}.png")
+                                                                        sourceFile.copyTo(target, overwrite = true)
+                                                                        skinKey++
+                                                                        onSkinSaved(account)
+                                                                        Toast.makeText(context, "皮肤已保存", Toast.LENGTH_SHORT).show()
+                                                                }
+                                                        } catch (e: Exception) {
+                                                                Toast.makeText(context, "保存皮肤失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                        }
+                                                }
+                                        }
+                                        FileSelectorResult.Cancelled -> { }
+                                        is FileSelectorResult.MultipleSelected -> { }
+                                }
+                                showSkinSelector = false
+                        }
+                )
         }
 }
