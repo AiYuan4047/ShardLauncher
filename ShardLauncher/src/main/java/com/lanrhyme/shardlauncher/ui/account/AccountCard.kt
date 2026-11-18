@@ -77,6 +77,7 @@ fun AccountCard(
         onSkinSaved: (Account) -> Unit = {}
 ) {
         val (isCardBlurEnabled, _, hazeState) = LocalCardLayoutConfig.current
+        val context = LocalContext.current
         var showMenu by remember { mutableStateOf(false) }
         var showSkinSelector by remember { mutableStateOf(false) }
         var skinKey by remember { mutableIntStateOf(0) }
@@ -111,7 +112,6 @@ fun AccountCard(
                                 horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                                 // Avatar
-                                val context = LocalContext.current
                                 val localSkinFile =
                                         java.io.File(
                                                 context.filesDir,

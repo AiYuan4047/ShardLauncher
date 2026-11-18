@@ -115,6 +115,7 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
                             contentAlignment = Alignment.Center
                         ) {
                             selectedAccount?.let { account ->
+                                val context = LocalContext.current
                                 val localSkinFile =
                                     java.io.File(
                                         LocalContext.current.filesDir,
@@ -129,7 +130,7 @@ fun AccountScreen(navController: NavController, accountViewModel: AccountViewMod
 
                                 val imageRequest =
                                     remember(skinRefreshKey) {
-                                        ImageRequest.Builder(LocalContext.current)
+                                        ImageRequest.Builder(context)
                                             .data(imageUrl)
                                             .crossfade(true)
                                             // 本地皮肤文件每次保存后需重新读取，禁用磁盘缓存避免读到旧图
