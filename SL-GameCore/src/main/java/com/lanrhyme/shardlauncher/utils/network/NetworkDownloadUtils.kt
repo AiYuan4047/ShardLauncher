@@ -7,10 +7,13 @@ package com.lanrhyme.shardlauncher.utils.network
 
 import com.lanrhyme.shardlauncher.utils.logging.Logger
 import kotlinx.coroutines.delay
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.TimeUnit
 
 /**
  * Download and parse JSON from URL
@@ -77,11 +80,25 @@ fun fetchStringFromUrls(urls: List<String>): String {
 /**
  * Download from mirror list with fallback
  */
+/**
+ * 下载连接池（连接复用 + HTTP/2），显著提升吞吐，避免每次新建连接
+ */
+private val downloadHttpClient: OkHttpClient by lazy {
+    OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .build()
+}
+
+/**
+ * Download from mirror list with fallback
+ * 使用 OkHttp（连接池/HTTP2）与更大的缓冲区，提升下载吞吐
+ */
 fun downloadFromMirrorList(
     urls: List<String>,
     sha1: String? = null,
     outputFile: File,
-    bufferSize: Int = 32768,
+    bufferSize: Int = 512 * 1024,
     onProgress: (Long) -> Unit = { }
 ): Boolean {
     var lastException: Exception? = null
@@ -89,24 +106,30 @@ fun downloadFromMirrorList(
     for (url in urls) {
         try {
             Logger.lDebug("Attempting to download from: $url")
-            val connection = URL(url).openConnection() as HttpURLConnection
-            connection.requestMethod = "GET"
-            connection.connectTimeout = 10000
-            connection.readTimeout = 60000
-            
-            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+            val request = Request.Builder().url(url).build()
+            downloadHttpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("HTTP ${response.code}: ${response.message}")
+                }
+                val body = response.body ?: throw IOException("Empty response body")
                 outputFile.parentFile?.mkdirs()
-                connection.inputStream.use { input ->
+                body.byteStream().use { input ->
                     outputFile.outputStream().use { output ->
                         val buffer = ByteArray(bufferSize)
                         var totalBytes = 0L
                         var bytesRead: Int
+                        var lastNotify = 0L
                         
                         while (input.read(buffer).also { bytesRead = it } != -1) {
                             output.write(buffer, 0, bytesRead)
                             totalBytes += bytesRead
-                            onProgress(totalBytes)
+                            // 节流回调：每 256KB 通知一次，降低回调开销
+                            if (totalBytes - lastNotify >= 256L * 1024) {
+                                lastNotify = totalBytes
+                                onProgress(totalBytes)
+                            }
                         }
+                        onProgress(totalBytes)
                     }
                 }
                 
@@ -123,8 +146,6 @@ fun downloadFromMirrorList(
                 }
                 
                 return true
-            } else {
-                throw IOException("HTTP ${connection.responseCode}: ${connection.responseMessage}")
             }
         } catch (e: Exception) {
             lastException = e

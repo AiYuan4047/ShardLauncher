@@ -12,7 +12,7 @@ import java.io.IOException
 class DownloadTask(
     val urls: List<String>,
     private val verifyIntegrity: Boolean,
-    private val bufferSize: Int = 32768,
+    private val bufferSize: Int = 512 * 1024,
     val targetFile: File,
     val sha1: String?,
     /** 是否本身是可以被下载的，如果不可下载，则通过提供url尝试下载，如果失败则抛出 FileNotFoundException */
