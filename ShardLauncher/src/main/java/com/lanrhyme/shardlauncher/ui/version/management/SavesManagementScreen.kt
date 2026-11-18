@@ -1,6 +1,7 @@
 package com.lanrhyme.shardlauncher.ui.version.management
 
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -164,7 +165,15 @@ fun SavesManagementScreen(
                             refreshTrigger++
                         },
                         onBackup = {
-                            // TODO: 实现存档备份功能
+                            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                            val backupDir = File(version.getGameDir(), "saves_backup/${saveFile.name}_$timestamp")
+                            try {
+                                if (!backupDir.parentFile.exists()) backupDir.parentFile.mkdirs()
+                                saveFile.copyRecursively(backupDir, overwrite = true)
+                                Toast.makeText(context, "备份成功: ${backupDir.name}", Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "备份失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
                         },
                         isCardBlurEnabled = isCardBlurEnabled,
                         cardAlpha = cardAlpha,
