@@ -2,6 +2,7 @@ package com.lanrhyme.shardlauncher.ui.version.management
 
 import android.os.Build
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -205,6 +206,10 @@ fun ModsManagementScreen(
                     selectedModForDetails = remoteMod
                 }
             },
+            onShowDetails = { remoteMod ->
+                selectedModForDetails = remoteMod
+            },
+            selectedModId = selectedModForDetails?.projectInfo?.id,
             onDelete = { remoteMod ->
                 remoteMod.localMod.file.delete()
                 refreshTrigger++
@@ -276,6 +281,8 @@ private fun ModsList(
     onEnable: (RemoteMod) -> Unit,
     onDisable: (RemoteMod) -> Unit,
     onSwapMoreInfo: (id: String, platform: com.lanrhyme.shardlauncher.game.mod.Platform) -> Unit,
+    onShowDetails: (RemoteMod) -> Unit,
+    selectedModId: String?,
     onDelete: (RemoteMod) -> Unit,
     isCardBlurEnabled: Boolean,
     cardAlpha: Float,
@@ -296,12 +303,12 @@ private fun ModsList(
                         mod = mod,
                         onLoad = { onLoad(mod) },
                         onForceRefresh = { onForceRefresh(mod) },
-                        onClick = { /* TODO: 实现选择功能 */ },
+                        onClick = { onShowDetails(mod) },
                         onEnable = { onEnable(mod) },
                         onDisable = { onDisable(mod) },
                         onSwapMoreInfo = onSwapMoreInfo,
                         onDelete = { onDelete(mod) },
-                        selected = false, // TODO: 实现选择状态
+                        selected = mod.projectInfo?.id == selectedModId,
                         isCardBlurEnabled = isCardBlurEnabled,
                         cardAlpha = cardAlpha,
                         hazeState = hazeState
@@ -383,6 +390,11 @@ private fun ModItemLayout(
             MaterialTheme.colorScheme.surface.copy(alpha = cardAlpha)
         } else {
             MaterialTheme.colorScheme.surface
+        },
+        border = if (selected) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else {
+            null
         }
     ) {
         Row(
