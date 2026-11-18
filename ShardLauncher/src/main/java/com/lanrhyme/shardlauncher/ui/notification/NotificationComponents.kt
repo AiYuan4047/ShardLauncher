@@ -71,6 +71,18 @@ fun NotificationItem(
                             )
                         }
                     }
+                    if (notification.actionLabel != null && notification.onAction != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        androidx.compose.material3.TextButton(
+                            onClick = { notification.onAction?.invoke() },
+                            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 0.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = notification.actionLabel,
+                                color = contentColor
+                            )
+                        }
+                    }
                 }
             }
             if (durationProgress != null) {

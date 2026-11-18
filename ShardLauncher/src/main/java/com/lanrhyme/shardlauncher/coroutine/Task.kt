@@ -24,10 +24,16 @@ class Task private constructor(
 
     var currentProgress by mutableFloatStateOf(-1f)
         private set
+    var currentSpeedText by mutableStateOf("")
+        private set
     var currentMessageRes by mutableStateOf<Int?>(null)
         private set
     var currentMessageArgs by mutableStateOf<Array<out Any>?>(null)
         private set
+
+    fun updateSpeedText(text: String) {
+        this.currentSpeedText = text
+    }
 
     /**
      * 更新进度，自动处理 NaN、isInfinite 的这种错误情况

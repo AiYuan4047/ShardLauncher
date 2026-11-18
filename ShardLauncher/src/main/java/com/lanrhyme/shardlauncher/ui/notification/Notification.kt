@@ -12,7 +12,9 @@ data class Notification(
     val progress: Float? = null,
     val isClickable: Boolean = false,
     val keepOnScreen: Boolean? = null,
-    val onClick: (() -> Unit)? = null
+    val onClick: (() -> Unit)? = null,
+    val actionLabel: String? = null,
+    val onAction: (() -> Unit)? = null
 )
 
 enum class NotificationType {

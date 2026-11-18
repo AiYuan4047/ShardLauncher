@@ -58,7 +58,9 @@ object DownloadManager {
                     type = NotificationType.Progress,
                     progress = 0f,
                     isClickable = true,
-                    onClick = { _showDialog.value = true }
+                    onClick = { _showDialog.value = true },
+                    actionLabel = "终止",
+                    onAction = { cancelDownload() }
                 )
             )
 
@@ -151,15 +153,18 @@ object DownloadManager {
             ?: tasks.lastOrNull()
             
         if (currentTask != null && notificationId != null && currentVersionId != null) {
+            val speedText = currentTask.task.currentSpeedText
             NotificationManager.update(
                 Notification(
                     id = notificationId!!,
                     title = "正在安装 $currentVersionId",
-                    message = currentTask.title,
+                    message = currentTask.title + if (speedText.isNotEmpty()) "  $speedText" else "",
                     type = NotificationType.Progress,
                     progress = currentTask.task.currentProgress,
                     isClickable = true,
-                    onClick = { _showDialog.value = true }
+                    onClick = { _showDialog.value = true },
+                    actionLabel = "终止",
+                    onAction = { cancelDownload() }
                 )
             )
         }

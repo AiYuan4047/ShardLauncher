@@ -232,6 +232,14 @@ private fun TaskItem(
                         )
                     }
                 }
+                if (task.currentSpeedText.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = task.currentSpeedText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

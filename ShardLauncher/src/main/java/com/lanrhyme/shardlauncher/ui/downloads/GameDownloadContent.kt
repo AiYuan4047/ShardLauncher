@@ -45,37 +45,45 @@ fun GameDownloadContent(navController: NavController) {
 
     val animatedSpeed = 1.0f
 
-    PageStateContainer(
-        isLoading = isLoading && versions.isEmpty(),
-        isEmpty = versions.isEmpty() && !isLoading,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        PageLazyColumn(
-            contentPadding = PaddingValues(16.dp),
-            showScrollIndicator = true
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 筛选栏始终可见，即使筛选结果为空也能恢复
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp)
         ) {
-            // Filter Section
-            item {
-                    FilterBar(
-                        selectedVersionTypes = selectedVersionTypes.toList(),
-                        searchQuery = searchQuery,
-                        onVersionTypeToggle = { viewModel.toggleVersionType(it) },
-                        onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                        onRefresh = { viewModel.loadVersions(forceRefresh = true) },
-                        animatedSpeed = animatedSpeed
-                    )
-            }
+            FilterBar(
+                selectedVersionTypes = selectedVersionTypes.toList(),
+                searchQuery = searchQuery,
+                onVersionTypeToggle = { viewModel.toggleVersionType(it) },
+                onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                onRefresh = { viewModel.loadVersions(forceRefresh = true) },
+                animatedSpeed = animatedSpeed
+            )
+        }
 
-            // Version List
-            items(
-                items = versions.take(50),
-                key = { it.id }
-            ) { version ->
-                VersionListItem(
-                    version = version,
-                    modifier = Modifier.animatedAppearance(2, animatedSpeed)
-                ) {
-                    navController.navigate("version_detail/${version.id}")
+        PageStateContainer(
+            isLoading = isLoading && versions.isEmpty(),
+            isEmpty = versions.isEmpty() && !isLoading,
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            PageLazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                showScrollIndicator = true
+            ) {
+                // Version List
+                items(
+                    items = versions.take(50),
+                    key = { it.id }
+                ) { version ->
+                    VersionListItem(
+                        version = version,
+                        modifier = Modifier.animatedAppearance(2, animatedSpeed)
+                    ) {
+                        navController.navigate("version_detail/${version.id}")
+                    }
                 }
             }
         }

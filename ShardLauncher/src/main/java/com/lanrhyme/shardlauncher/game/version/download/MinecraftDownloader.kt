@@ -120,17 +120,30 @@ class MinecraftDownloader(
         }
 
         val progressJob = launch(Dispatchers.Main) {
+            var lastTime = System.currentTimeMillis()
+            var lastSize = 0L
             while (isActive) {
                 try {
                     ensureActive()
                     val currentFileSize = downloadedFileSize.get()
                     val totalFileSize = totalFileSize.get().run { if (this < currentFileSize) currentFileSize else this }
-                    task.updateProgress(
-                        (currentFileSize.toFloat() / totalFileSize.toFloat()).coerceIn(0f, 1f),
-                        taskMessageRes,
-                        downloadedFileCount.get(), totalFileCount.get(), //文件个数
-                        formatFileSize(currentFileSize), formatFileSize(totalFileSize) //文件大小
-                    )
+                    val now = System.currentTimeMillis()
+                    val dt = (now - lastTime).coerceAtLeast(1L)
+                    val speedBytesPerSec = ((currentFileSize - lastSize).toDouble() / dt * 1000.0).toLong().coerceAtLeast(0L)
+                    lastTime = now
+                    lastSize = currentFileSize
+                    task.updateSpeedText("${formatFileSize(speedBytesPerSec)}/s")
+                    if (totalFileSize <= 0L) {
+                        // 总大小未知（size 字段缺失），显示不确定进度而非恒 0
+                        task.updateProgress(-1f, taskMessageRes)
+                    } else {
+                        task.updateProgress(
+                            (currentFileSize.toFloat() / totalFileSize.toFloat()).coerceIn(0f, 1f),
+                            taskMessageRes,
+                            downloadedFileCount.get(), totalFileCount.get(), //文件个数
+                            formatFileSize(currentFileSize), formatFileSize(totalFileSize) //文件大小
+                        )
+                    }
                     delay(100)
                 } catch (_: CancellationException) {
                     break //取消
