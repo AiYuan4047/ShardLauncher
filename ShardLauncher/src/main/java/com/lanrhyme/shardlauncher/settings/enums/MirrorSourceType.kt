@@ -9,6 +9,11 @@ import com.lanrhyme.shardlauncher.R
 
 enum class MirrorSourceType(val textRes: Int) {
     /**
+     * 仅官方源（Mojang 官方，不使用镜像）
+     */
+    OFFICIAL_ONLY(R.string.settings_launcher_mirror_official_only),
+
+    /**
      * 官方源优先
      */
     OFFICIAL_FIRST(R.string.settings_launcher_mirror_official_first),

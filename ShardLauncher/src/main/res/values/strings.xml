@@ -21,6 +21,7 @@
     <string name="generic_open_link">Open Link</string>
     <string name="generic_confirm">Confirm</string>
     <string name="generic_cancel">Cancel</string>
+    <string name="settings_launcher_mirror_official_only">Official Source Only</string>
     <string name="settings_launcher_mirror_official_first">Official Source First</string>
     <string name="settings_launcher_mirror_mirror_first">Mirror Source First</string>
     <string name="generic_follow_global">Follow Global Settings</string>

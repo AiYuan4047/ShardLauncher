@@ -48,6 +48,7 @@ fun String.mapMirrorableUrls(fileDownloadSource: MirrorSourceType = MirrorSource
     // 尊重用户的下载源设置，包括资源文件
     // 资源文件数量较多，但用户可能因网络原因需要镜像源
     return when (fileDownloadSource) {
+        MirrorSourceType.OFFICIAL_ONLY -> listOfNotNull(this)
         MirrorSourceType.OFFICIAL_FIRST -> listOfNotNull(this, mirrorUrl)
         MirrorSourceType.MIRROR_FIRST -> listOfNotNull(mirrorUrl, this)
     }

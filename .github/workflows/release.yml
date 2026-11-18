@@ -82,13 +82,17 @@ jobs:
       id: decode_keystore
       env:
         SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        # 固定 debug 签名密钥（无正式密钥时复用，保证每次构建签名一致，可覆盖安装旧版本）
+        FIXED_DEBUG_KEYSTORE_BASE64: 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
       run: |
         if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
           echo $SIGNING_KEYSTORE_BASE64 | base64 --decode > ShardLauncher/keystore.jks
           echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
         else
-          echo "HAS_KEYSTORE=false" >> "$GITHUB_ENV"
-          echo "No signing keystore secret configured; falling back to debug signing."
+          echo $FIXED_DEBUG_KEYSTORE_BASE64 | base64 --decode > ShardLauncher/keystore.jks
+          echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
+          echo "USING_DEBUG_SIGN=true" >> "$GITHUB_ENV"
+          echo "No signing keystore secret configured; using fixed debug signing."
         fi
 
     - name: Build Release APKs
@@ -99,15 +103,11 @@ jobs:
         SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
         SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
       run: |
-        if [ "$HAS_KEYSTORE" = "true" ]; then
+        if [ "$HAS_KEYSTORE" = "true" ] && [ "$USING_DEBUG_SIGN" != "true" ]; then
           ./gradlew assembleRelease -Pandroid.injected.signing.store.file=$(pwd)/ShardLauncher/keystore.jks -Pandroid.injected.signing.store.password=$SIGNING_KEYSTORE_PASSWORD -Pandroid.injected.signing.key.alias=$SIGNING_KEY_ALIAS -Pandroid.injected.signing.key.password=$SIGNING_KEY_PASSWORD
         else
-          # 无正式签名密钥：用 debug 签名构建（保证可安装）。确保 debug.keystore 存在
-          if [ ! -f ~/.android/debug.keystore ]; then
-            mkdir -p ~/.android
-            keytool -genkeypair -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug,O=Android,C=US"
-          fi
-          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=$HOME/.android/debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
+          # 无正式签名密钥：用固定 debug 签名构建（密钥固定，签名一致，无需卸载旧版即可覆盖安装）
+          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=$(pwd)/ShardLauncher/keystore.jks -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
         fi
 
     - name: Prepare Artifacts

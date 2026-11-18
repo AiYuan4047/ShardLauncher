@@ -120,5 +120,5 @@ object AllSettings : SettingsRegistry() {
     /**
      * Mirror source for game files
      */
-    val fileDownloadSource = enumSetting("fileDownloadSource", com.lanrhyme.shardlauncher.settings.enums.MirrorSourceType.OFFICIAL_FIRST)
+    val fileDownloadSource = enumSetting("fileDownloadSource", com.lanrhyme.shardlauncher.settings.enums.MirrorSourceType.OFFICIAL_ONLY)
 }
