@@ -272,6 +272,7 @@ class GameInstaller(
     fun cancelInstall() {
         Logger.lInfo("Cancelling game installation: ${info.customVersionName}")
         taskExecutor.cancel()
+        clearTempGameDir()
         clearTargetClient()
         Logger.lInfo("Game installation cancelled")
     }
