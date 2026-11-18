@@ -27,8 +27,15 @@ fun handleEvent(context: Context, eventType: String?, eventData: String?) {
             val parts = eventData?.split('|', limit = 2) ?: listOf()
             val title = parts.getOrNull(0) ?: ""
             val message = parts.getOrNull(1) ?: ""
-            // TODO: Replace with a proper dialog
-            Toast.makeText(context, "$title\n$message", Toast.LENGTH_LONG).show()
+            if (context is android.app.Activity) {
+                android.app.AlertDialog.Builder(context)
+                    .setTitle(title.ifEmpty { null })
+                    .setMessage(message)
+                    .setPositiveButton("确定", null)
+                    .show()
+            } else {
+                Toast.makeText(context, "$title\n$message", Toast.LENGTH_LONG).show()
+            }
         }
         "启动游戏" -> {
             Toast.makeText(context, "启动游戏: $eventData", Toast.LENGTH_SHORT).show()
