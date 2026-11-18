@@ -83,7 +83,13 @@ jobs:
       env:
         SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
       run: |
-        echo $SIGNING_KEYSTORE_BASE64 | base64 --decode > ShardLauncher/keystore.jks
+        if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
+          echo $SIGNING_KEYSTORE_BASE64 | base64 --decode > ShardLauncher/keystore.jks
+          echo "HAS_KEYSTORE=true" >> "$GITHUB_ENV"
+        else
+          echo "HAS_KEYSTORE=false" >> "$GITHUB_ENV"
+          echo "No signing keystore secret configured; falling back to debug signing."
+        fi
 
     - name: Build Release APKs
       env:
@@ -92,7 +98,12 @@ jobs:
         SIGNING_KEYSTORE_PASSWORD: ${{ secrets.SIGNING_KEYSTORE_PASSWORD }}
         SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
         SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-      run: ./gradlew assembleRelease -Pandroid.injected.signing.store.file=$(pwd)/ShardLauncher/keystore.jks -Pandroid.injected.signing.store.password=$SIGNING_KEYSTORE_PASSWORD -Pandroid.injected.signing.key.alias=$SIGNING_KEY_ALIAS -Pandroid.injected.signing.key.password=$SIGNING_KEY_PASSWORD
+      run: |
+        if [ "$HAS_KEYSTORE" = "true" ]; then
+          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=$(pwd)/ShardLauncher/keystore.jks -Pandroid.injected.signing.store.password=$SIGNING_KEYSTORE_PASSWORD -Pandroid.injected.signing.key.alias=$SIGNING_KEY_ALIAS -Pandroid.injected.signing.key.password=$SIGNING_KEY_PASSWORD
+        else
+          ./gradlew assembleRelease -Pandroid.injected.signing.store.file=$HOME/.android/debug.keystore -Pandroid.injected.signing.store.password=android -Pandroid.injected.signing.key.alias=androiddebugkey -Pandroid.injected.signing.key.password=android
+        fi
 
     - name: Prepare Artifacts
       run: |
