@@ -19,6 +19,7 @@ import com.lanrhyme.shardlauncher.game.account.AccountType
 import com.lanrhyme.shardlauncher.game.account.AccountsManager
 import com.lanrhyme.shardlauncher.game.account.offline.OfflineYggdrasilServer
 import com.lanrhyme.shardlauncher.game.multirt.Runtime
+import com.lanrhyme.shardlauncher.game.multirt.RuntimeInstaller
 import com.lanrhyme.shardlauncher.game.multirt.RuntimesManager
 import com.lanrhyme.shardlauncher.game.plugin.driver.DriverPluginManager
 import com.lanrhyme.shardlauncher.game.plugin.renderer.RendererPluginManager
@@ -78,7 +79,7 @@ class GameLauncher(
         }
 
         val customArgs = version.getJvmArgs().takeIf { it.isNotBlank() } ?: AllSettings.jvmArgs.getValue()
-        val javaRuntimeName = getRuntimeName()
+        val javaRuntimeName = ensureRuntimeName(getRuntimeName())
         this.runtime = RuntimesManager.loadRuntime(javaRuntimeName)
 
         // Initialize LoggerBridge (temporarily disabled due to JNI issues)
@@ -122,6 +123,34 @@ class GameLauncher(
         )
 
         return launchGame(account, javaRuntimeName, customArgs)
+    }
+
+    /**
+     * 确保存在可用的 Java 运行时：优先用首选名，其次已安装的匹配版本，
+     * 都没有则自动安装 APK 内置的匹配版本，避免“Selected runtime is broken!”
+     */
+    private suspend fun ensureRuntimeName(preferredName: String): String {
+        // 首选运行时有效则直接使用
+        val preferred = RuntimesManager.loadRuntime(preferredName)
+        if (preferred.versionString != null) return preferredName
+
+        val targetJavaVersion = gameManifest.javaVersion?.majorVersion ?: 8
+
+        // 已安装的匹配运行时
+        RuntimesManager.getNearestJreName(targetJavaVersion)?.let { return it }
+
+        // 最后尝试从 APK 内置资源安装匹配版本
+        val bundled = RuntimeInstaller.getBundledRuntimes(activity)
+            .filter { it.javaVersion >= targetJavaVersion }
+            .minByOrNull { it.javaVersion }
+            ?: RuntimeInstaller.getBundledRuntimes(activity).minByOrNull { it.javaVersion }
+            ?: throw IllegalStateException("没有可用的内置 Java 运行时，请到设置中手动导入")
+
+        Logger.lInfo("未找到可用 Java 运行时，自动安装 ${bundled.displayName}")
+        RuntimeInstaller.installBundledRuntime(activity, bundled) { _, msg ->
+            Logger.lInfo("Java 运行时安装: $msg")
+        }.getOrThrow()
+        return bundled.name
     }
 
     private suspend fun launchGame(

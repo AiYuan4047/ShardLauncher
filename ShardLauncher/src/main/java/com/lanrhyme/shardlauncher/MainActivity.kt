@@ -832,7 +832,8 @@ fun MainScreen(
                     isCompleted = downloadTask?.taskState == com.lanrhyme.shardlauncher.coroutine.TaskState.COMPLETED,
                     onComplete = {
                         com.lanrhyme.shardlauncher.game.download.DownloadManager.closeDialog()
-                    }
+                    },
+                    hideTaskIds = setOf("Download.Game.ClearTemp")
                 )
             }
         }

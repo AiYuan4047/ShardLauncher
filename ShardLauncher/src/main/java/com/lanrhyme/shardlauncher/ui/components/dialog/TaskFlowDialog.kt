@@ -53,7 +53,8 @@ fun TaskFlowDialog(
     onCancel: () -> Unit = {},
     onClose: () -> Unit = {},
     isCompleted: Boolean = false,
-    onComplete: () -> Unit = {}
+    onComplete: () -> Unit = {},
+    hideTaskIds: Set<String> = emptySet()
 ) {
     ShardDialog(
         visible = visible,
@@ -76,8 +77,9 @@ fun TaskFlowDialog(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // 任务列表
+            // 任务列表（可按 id 隐藏内部任务，如“清理临时文件”）
             val scrollState = rememberLazyListState()
+            val visibleTasks = tasks.filter { it.id !in hideTaskIds }
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -85,7 +87,7 @@ fun TaskFlowDialog(
                 state = scrollState,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(tasks) { task ->
+                items(visibleTasks) { task ->
                     TaskItem(
                         modifier = Modifier.fillMaxWidth(),
                         title = task.title,
